@@ -74,7 +74,7 @@ int main()
 	Grid.at(goalState).goal = true;
 	Grid.at(goalState).wall = false;
 
-	// Now create optimal path to goal
+	// Now create optimal path to goal from lower left corner and upper right corner
 	// Find state on lowest level halfway to being below goal state
 	int firstRefState = (xMax / 4);
 
@@ -101,6 +101,29 @@ int main()
 		currentState++;
 	}
 
+	int thirdRefState = xMax * 3 / 4 + (yMax)*(xMax+1);
+	int fourthRefState = (xMax * 3 / 4) + (yMax / 2)*(xMax + 1);
+
+	currentState = xMax+yMax*(xMax + 1);
+
+	while (currentState != thirdRefState)
+	{
+		Grid.at(currentState).wall = false;
+		currentState--;
+	}
+
+	while (currentState != fourthRefState)
+	{
+		Grid.at(currentState).wall = false;
+		currentState = currentState - (xMax + 1);
+	}
+
+	while (currentState != goalState)
+	{
+		Grid.at(currentState).wall = false;
+		currentState--;
+	}
+
 	// Show representation of grid
 	
 	int numRows = yMax + 1;
@@ -108,7 +131,7 @@ int main()
 	for (int i = numRows; i > 0; i--)
 	{
 		int jStart = (xMax + 1)*(yMax + 1) + (i - numRows - 1) - xMax*(numRows - i + 1);
-		for (int j = jStart; j < jStart+xMax; j++)
+		for (int j = jStart; j < jStart+xMax+1; j++)
 		{
 			if (Grid.at(j).wall == true)
 			{
