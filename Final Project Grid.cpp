@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <random>
 #include <time.h>
+#include <fstream>
 
 
 using namespace std;
@@ -17,6 +18,7 @@ class state
 {
 public:
 	int stateNum;
+	int reward;
 	bool wall;
 	bool goal;
 
@@ -27,28 +29,33 @@ void state::init()
 {
 	// originally initialize every state as a wall and not a goal
 	stateNum = 0;
+	reward = 0;
 	wall = true;
 	goal = false;
 }
 
-vector<state> gridSetup(int xMax, int yMax);
+vector<state> gridSetup(int xMax, int yMax, ofstream& fout);
 
 int main()
 {
 	srand(time(NULL));
+	ofstream  fout;
 
-	int xMax = 9;
-	int yMax = 9;
+	fout.clear();
+	fout.open("Grid.txt");
+
+	int xMax = 19;
+	int yMax = 19;
 
 	// Create maze
-	vector<state> Maze = gridSetup(xMax, yMax);
+	vector<state> Maze = gridSetup(xMax, yMax, fout);
 	
 
 	system("pause");
     return 0;
 }
 
-vector<state> gridSetup(int xMax, int yMax)
+vector<state> gridSetup(int xMax, int yMax, ofstream& fout)
 {
 	// make 10*10 grid 
 	vector<state> Grid;
@@ -70,26 +77,31 @@ vector<state> gridSetup(int xMax, int yMax)
 	}
 
 	// Randomly pick half of states to not have walls
-	for (int clearWallsIndex = 0; clearWallsIndex < Grid.size() / 2; clearWallsIndex++)
+	for (int clearWallsIndex = 0; clearWallsIndex < Grid.size() *17/32; clearWallsIndex++)
 	{
 		int clearState = rand() % Grid.size();
-		//cout << clearState << endl;
+		
+		while (Grid.at(clearState).wall == false)
+		{
+			clearState = rand() % Grid.size();
+		}
 
 		Grid.at(clearState).wall = false;
 	}
 
 	// Now identify which state has goal (call it the middle state)
 
-	int goalState = (xMax / 2) + (yMax / 2)*(xMax + 1);
+	int goalState = (xMax *4/5) + (yMax *4/5)*(xMax + 1);
 	Grid.at(goalState).goal = true;
 	Grid.at(goalState).wall = false;
 
+	
 	// Now create optimal path to goal from lower left corner and upper right corner
 	// Find state on lowest level halfway to being below goal state
-	int firstRefState = (xMax / 4);
+	int firstRefState = (xMax / 3);
 
 	// Find state halfway in the x and all the way in the y to goal state
-	int secondRefState = (xMax / 4) + (yMax / 2)*(xMax + 1);
+	int secondRefState = (xMax / 3) + (yMax *4/5)*(xMax + 1);
 
 	int currentState = 0;
 
@@ -111,29 +123,38 @@ vector<state> gridSetup(int xMax, int yMax)
 		currentState++;
 	}
 
-	int thirdRefState = xMax * 3 / 4 + (yMax)*(xMax + 1);
-	int fourthRefState = (xMax * 3 / 4) + (yMax / 2)*(xMax + 1);
+	int thirdRefState =  (yMax*4/5)*(xMax + 1);
 
-	currentState = xMax + yMax*(xMax + 1);
+	currentState = 0;
 
 	while (currentState != thirdRefState)
 	{
 		Grid.at(currentState).wall = false;
-		currentState--;
-	}
-
-	while (currentState != fourthRefState)
-	{
-		Grid.at(currentState).wall = false;
-		currentState = currentState - (xMax + 1);
+		currentState = currentState+xMax+1;
 	}
 
 	while (currentState != goalState)
 	{
 		Grid.at(currentState).wall = false;
-		currentState--;
+		currentState++;
 	}
 
+	int fourthRefState = (xMax * 4 / 5) ;
+
+	currentState = 0;
+
+	while (currentState != fourthRefState)
+	{
+		Grid.at(currentState).wall = false;
+		currentState++;
+	}
+
+	while (currentState != goalState)
+	{
+		Grid.at(currentState).wall = false;
+		currentState = currentState + xMax + 1;
+	}
+	
 	// Show representation of grid
 
 	int numRows = yMax + 1;
@@ -141,24 +162,29 @@ vector<state> gridSetup(int xMax, int yMax)
 	for (int i = numRows; i > 0; i--)
 	{
 		int jStart = (xMax + 1)*(yMax + 1) + (i - numRows - 1) - xMax*(numRows - i + 1);
+
+		cout << jStart << endl;
 		for (int j = jStart; j < jStart + xMax + 1; j++)
 		{
 			if (Grid.at(j).wall == true)
 			{
-				cout << "-" << "\t";
+				Grid.at(j).reward = -1;
+				fout << "-" << "\t";
 			}
 
 			else if (Grid.at(j).goal == true)
 			{
-				cout << "*" << "\t";
+				Grid.at(j).reward = 100;
+				fout << "*" << "\t";
 			}
 
 			else
 			{
-				cout << Grid.at(j).stateNum << "\t";
+				Grid.at(j).reward = -1;
+				fout << Grid.at(j).stateNum << "\t";
 			}
 		}
-		cout << endl;
+		fout << endl;
 	}
 
 	return Grid;
