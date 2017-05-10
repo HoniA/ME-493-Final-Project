@@ -31,21 +31,31 @@ void state::init()
 	goal = false;
 }
 
+vector<state> gridSetup(int xMax, int yMax);
+
 int main()
 {
 	srand(time(NULL));
 
 	int xMax = 9;
 	int yMax = 9;
-	int xGoal = 1;
-	int yGoal = 1;
 
+	// Create maze
+	vector<state> Maze = gridSetup(xMax, yMax);
+	
+
+	system("pause");
+    return 0;
+}
+
+vector<state> gridSetup(int xMax, int yMax)
+{
 	// make 10*10 grid 
 	vector<state> Grid;
 
-	for (int i = 0; i < xMax+1; i++)
+	for (int i = 0; i < xMax + 1; i++)
 	{
-		for (int j = 0; j < yMax+1; j++)
+		for (int j = 0; j < yMax + 1; j++)
 		{
 			state S;
 			S.init();
@@ -70,7 +80,7 @@ int main()
 
 	// Now identify which state has goal (call it the middle state)
 
-	int goalState = (xMax/2) + (yMax/2)*(xMax + 1);
+	int goalState = (xMax / 2) + (yMax / 2)*(xMax + 1);
 	Grid.at(goalState).goal = true;
 	Grid.at(goalState).wall = false;
 
@@ -92,7 +102,7 @@ int main()
 	while (currentState != secondRefState)
 	{
 		Grid.at(currentState).wall = false;
-		currentState = currentState + xMax+1;
+		currentState = currentState + xMax + 1;
 	}
 
 	while (currentState != goalState)
@@ -101,10 +111,10 @@ int main()
 		currentState++;
 	}
 
-	int thirdRefState = xMax * 3 / 4 + (yMax)*(xMax+1);
+	int thirdRefState = xMax * 3 / 4 + (yMax)*(xMax + 1);
 	int fourthRefState = (xMax * 3 / 4) + (yMax / 2)*(xMax + 1);
 
-	currentState = xMax+yMax*(xMax + 1);
+	currentState = xMax + yMax*(xMax + 1);
 
 	while (currentState != thirdRefState)
 	{
@@ -125,13 +135,13 @@ int main()
 	}
 
 	// Show representation of grid
-	
+
 	int numRows = yMax + 1;
 
 	for (int i = numRows; i > 0; i--)
 	{
 		int jStart = (xMax + 1)*(yMax + 1) + (i - numRows - 1) - xMax*(numRows - i + 1);
-		for (int j = jStart; j < jStart+xMax+1; j++)
+		for (int j = jStart; j < jStart + xMax + 1; j++)
 		{
 			if (Grid.at(j).wall == true)
 			{
@@ -151,7 +161,5 @@ int main()
 		cout << endl;
 	}
 
-	system("pause");
-    return 0;
+	return Grid;
 }
-
